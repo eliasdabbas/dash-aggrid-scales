@@ -1,6 +1,6 @@
 [project]
 name = "dash-aggrid-scales"
-version = "0.1.0"
+version = "0.1.1"
 description = "Plotly color scales to apply to columns in an AgGrid"
 readme = "README.md"
 authors = [
@@ -8,10 +8,8 @@ authors = [
 ]
 requires-python = ">=3.10"
 dependencies = [
-    "dash-ag-grid>=31.3.0",
-    "dash-bootstrap-templates>=1.3.0",
     "pandas>=2.2.3",
-    "plotly==5.24.1",
+    "plotly>=5.0.0",
 ]
 
 
