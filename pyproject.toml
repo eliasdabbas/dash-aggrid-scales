@@ -1,6 +1,6 @@
 [project]
 name = "dash-aggrid-scales"
-version = "0.1.1"
+dynamic = ["version"]
 description = "Plotly color scales to apply to columns in an AgGrid"
 readme = "README.md"
 authors = [
@@ -16,3 +16,17 @@ dependencies = [
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[tool.hatch.version]
+path = "dash_aggrid_scales/__init__.py"
+
+[dependency-groups]
+dev = [
+    "dash>=2.18.2",
+    "dash-ag-grid>=31.3.0",
+    "dash-bootstrap-components>=1.7.1",
+    "dash-bootstrap-templates>=2.0.0",
+]
+
+[tool.ruff.lint.extend-per-file-ignores]
+"__init__.py" = ["E402"]
