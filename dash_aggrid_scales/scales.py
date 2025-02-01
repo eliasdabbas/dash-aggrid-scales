@@ -9,7 +9,7 @@ __all__ = ["sequential", "bar", "qualitative"]
 
 def sequential(
     series: pd.Series, colorscale: str = "cividis", flip_textcolor: bool = False
-) -> list:
+):
     """
     Generates style conditions for a heatmap-like styling based on the values in a Pandas Series.
 
@@ -91,7 +91,9 @@ def qualitative(series: pd.Series, colorscale: str = "Vivid"):
     for i, cat in enumerate(categories):
         styleConditions.append(
             {
-                "condition": f"params.value === '{cat}'",
+                "condition": f"params.value === '{cat}'"
+                if isinstance(cat, str)
+                else f"params.value === {cat}",
                 "style": {"backgroundColor": scale[i]},
             }
         )
