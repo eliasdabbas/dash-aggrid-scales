@@ -1,11 +1,25 @@
-import dash_aggrid_scales as das
+# /// script
+# requires-python = ">=3.13"
+# dependencies = [
+#     "dash",
+#     "dash-ag-grid",
+#     "dash-aggrid-scales",
+#     "dash-bootstrap-components",
+#     "dash-bootstrap-templates",
+#     "gunicorn",
+# ]
+# ///
 import dash_bootstrap_components as dbc
 import plotly.express as px
 from dash import Dash, Input, Output, dcc, html
 from dash_ag_grid import AgGrid
 from dash_bootstrap_templates import load_figure_template
 
+import dash_aggrid_scales as das
+
 load_figure_template("all")
+
+primary = "#2C3E50"
 
 dbc_css = "https://cdn.jsdelivr.net/gh/AnnMarieW/dash-bootstrap-templates/dbc.min.css"
 app = Dash(external_stylesheets=[dbc.themes.FLATLY, dbc_css])
@@ -13,6 +27,8 @@ app = Dash(external_stylesheets=[dbc.themes.FLATLY, dbc_css])
 medals = px.data.medals_long().assign(negative=list(range(-5, 4)))
 iris = px.data.iris()
 gapminder = px.data.gapminder()
+stocks = px.data.stocks()
+stock_changes = stock_changes = px.data.stocks().iloc[:, 1:].melt()["value"]
 
 defaultColDef = {
     "filter": True,
@@ -21,12 +37,21 @@ defaultColDef = {
     },
 }
 
+dataTypeDefinitions = {
+    "number": {
+        "baseDataType": "number",
+        "extendsDataType": "number",
+        "columnTypes": "rightAligned",
+        "appendColumnTypes": True,
+    }
+}
+
 
 medals_grid = AgGrid(
     rowData=medals.to_dict("records"),
     defaultColDef=defaultColDef,
     columnSize="sizeToFit",
-    style={"height": 500},
+    style={"height": 450},
     columnDefs=[
         {
             "field": "nation",
@@ -61,17 +86,18 @@ iris_grid = AgGrid(
     rowData=iris.to_dict("records"),
     defaultColDef=defaultColDef,
     style={"height": 700},
-    columnSize="sizeToFit",
-    dashGridOptions={"rowHeight": 28},
+    rowStyle={"fontFamily": "Menlo"},
+    columnSize="responsiveSizeToFit",
+    dashGridOptions={"rowHeight": 28, "dataTypeDefinitions": dataTypeDefinitions},
     columnDefs=[
         {
             "field": "sepal_length",
-            "cellStyle": {
-                "styleConditions": das.sequential(iris["sepal_length"], "Viridis")
-            },
+            "valueFormatter": {"function": "d3.format('.2f')(params.value)"},
+            "cellStyle": {"styleConditions": das.sequential(iris["sepal_length"])},
         },
         {
             "field": "sepal_width",
+            "valueFormatter": {"function": "d3.format('.2f')(params.value)"},
             "cellStyle": {
                 "styleConditions": das.sequential(iris["sepal_width"], "magma")
             },
@@ -81,7 +107,8 @@ iris_grid = AgGrid(
         },
         {
             "field": "petal_width",
-            "cellStyle": {"styleConditions": das.bar(iris["petal_width"], "steelblue")},
+            "valueFormatter": {"function": "d3.format('.2f')(params.value)"},
+            "cellStyle": {"styleConditions": das.bar(iris["petal_width"], "skyblue")},
         },
         {
             "field": "species",
@@ -96,7 +123,9 @@ iris_grid = AgGrid(
 gapminder_grid = AgGrid(
     rowData=gapminder.to_dict("records"),
     style={"height": 700},
-    dashGridOptions={"rowHeight": 28},
+    rowStyle={"fontFamily": "Menlo"},
+    columnSize="responsiveSizeToFit",
+    dashGridOptions={"rowHeight": 28, "dataTypeDefinitions": dataTypeDefinitions},
     defaultColDef=defaultColDef,
     columnDefs=[
         {
@@ -114,16 +143,21 @@ gapminder_grid = AgGrid(
         },
         {
             "field": "lifeExp",
-            "cellStyle": {"styleConditions": das.bar(gapminder["lifeExp"], "gray")},
+            "valueFormatter": {"function": "d3.format('.1f')(params.value)"},
+            "cellStyle": {
+                "styleConditions": das.bar(gapminder["lifeExp"], "lightgray")
+            },
         },
         {
             "field": "pop",
+            "valueFormatter": {"function": "d3.format('>.3s')(params.value)"},
             "cellStyle": {
                 "styleConditions": das.sequential(gapminder["pop"], "cividis")
             },
         },
         {
             "field": "gdpPercap",
+            "valueFormatter": {"function": "d3.format('.2s')(params.value)"},
             "cellStyle": {
                 "styleConditions": das.bar(
                     gapminder["gdpPercap"],
@@ -133,6 +167,30 @@ gapminder_grid = AgGrid(
         },
     ],
 )
+
+
+stocks_grid = AgGrid(
+    rowData=stocks.to_dict("records"),
+    defaultColDef=defaultColDef,
+    columnSize="responsiveSizeToFit",
+    rowStyle={"font-size": "0.75rem"},
+    dashGridOptions={"rowHeight": 20},
+    style={"height": 650},
+    columnDefs=[
+        {
+            "field": "date",
+        }
+    ]
+    + [
+        {
+            "field": col,
+            "valueFormatter": {"function": "d3.format(',.2%')(params.value)"},
+            "cellStyle": {"styleConditions": das.sequential(stock_changes)},
+        }
+        for col in stocks.columns[1:]
+    ],
+)
+
 
 code_tab = html.Div(
     [
@@ -186,11 +244,15 @@ das.sequential(s)
     ]
 )
 
+
 app.layout = dbc.Container(
     [
         html.Br(),
         html.Br(),
-        html.Div(html.H1("Dash AgGrid Scales"), style={"textAlign": "center"}),
+        html.Div(
+            html.H1("Dash AgGrid Scales"),
+            style={"textAlign": "center", "color": primary},
+        ),
         html.Br(),
         html.Br(),
         dbc.Tabs(
@@ -198,20 +260,66 @@ app.layout = dbc.Container(
                 dbc.Tab(
                     [
                         medals_grid,
+                        html.Br(),
+                        html.Br(),
+                        html.H2("Without scales:"),
+                        html.Br(),
+                        AgGrid(
+                            rowData=medals.to_dict("records"),
+                            style={"height": 450},
+                            columnDefs=[{"field": col} for col in medals],
+                            columnSize="sizeToFit",
+                        ),
                     ],
                     label="Medals grid",
+                    label_style={"color": primary, "fontWeight": "bold"},
                 ),
                 dbc.Tab(
                     [
                         iris_grid,
+                        html.Br(),
+                        html.Br(),
+                        html.H2("Without scales:"),
+                        html.Br(),
+                        AgGrid(
+                            rowData=iris.to_dict("records"),
+                            style={"height": 700},
+                            columnDefs=[{"field": col} for col in iris],
+                            columnSize="sizeToFit",
+                        ),
                     ],
                     label="Iris grid",
+                    label_style={"color": primary, "fontWeight": "bold"},
                 ),
-                dbc.Tab([gapminder_grid], label="Gapminder grid"),
-                dbc.Tab([code_tab], label="Code"),
+                dbc.Tab(
+                    [
+                        gapminder_grid,
+                        html.Br(),
+                        html.Br(),
+                        html.H2("Without scales:"),
+                        html.Br(),
+                        AgGrid(
+                            rowData=gapminder.to_dict("records"),
+                            style={"height": 700},
+                            columnDefs=[
+                                {"field": col} for col in gapminder.columns[:6]
+                            ],
+                            columnSize="sizeToFit",
+                        ),
+                    ],
+                    label="Gapminder grid",
+                    label_style={"color": primary, "fontWeight": "bold"},
+                ),
+                dbc.Tab(
+                    stocks_grid,
+                    label="Stocks",
+                    label_style={"color": primary, "fontWeight": "bold"},
+                ),
+                # dbc.Tab([code_tab], label="Code"),
             ]
         ),
-    ],
+    ]
+    + [html.Br() for i in range(10)],
     class_name="dbc dbc-ag-grid",
 )
 
