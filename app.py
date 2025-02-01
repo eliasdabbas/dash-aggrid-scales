@@ -87,7 +87,7 @@ iris_grid = AgGrid(
     defaultColDef=defaultColDef,
     style={"height": 700},
     rowStyle={"fontFamily": "Menlo"},
-    columnSize="sizeToFit",
+    columnSize="responsiveSizeToFit",
     dashGridOptions={"rowHeight": 28, "dataTypeDefinitions": dataTypeDefinitions},
     columnDefs=[
         {
@@ -124,7 +124,7 @@ gapminder_grid = AgGrid(
     rowData=gapminder.to_dict("records"),
     style={"height": 700},
     rowStyle={"fontFamily": "Menlo"},
-    columnSize="sizeToFit",
+    columnSize="responsiveSizeToFit",
     dashGridOptions={"rowHeight": 28, "dataTypeDefinitions": dataTypeDefinitions},
     defaultColDef=defaultColDef,
     columnDefs=[
