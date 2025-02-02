@@ -119,7 +119,6 @@ iris_grid = AgGrid(
     ],
 )
 
-
 gapminder_grid = AgGrid(
     rowData=gapminder.to_dict("records"),
     style={"height": 700},
@@ -168,7 +167,6 @@ gapminder_grid = AgGrid(
     ],
 )
 
-
 stocks_grid = AgGrid(
     rowData=stocks.to_dict("records"),
     defaultColDef=defaultColDef,
@@ -185,7 +183,9 @@ stocks_grid = AgGrid(
         {
             "field": col,
             "valueFormatter": {"function": "d3.format(',.2%')(params.value)"},
-            "cellStyle": {"styleConditions": das.sequential(stock_changes)},
+            "cellStyle": {
+                "styleConditions": das.diverging(stock_changes, "RdBu", midpoint=1)
+            },
         }
         for col in stocks.columns[1:]
     ],
