@@ -22,7 +22,7 @@ load_figure_template("all")
 primary = "#2C3E50"
 
 dbc_css = "https://cdn.jsdelivr.net/gh/AnnMarieW/dash-bootstrap-templates/dbc.min.css"
-app = Dash(external_stylesheets=[dbc.themes.FLATLY, dbc_css])
+app = Dash(external_stylesheets=[dbc.themes.COSMO, dbc_css])
 
 medals = px.data.medals_long().assign(negative=list(range(-5, 4)))
 iris = px.data.iris()
@@ -244,83 +244,215 @@ das.sequential(s)
     ]
 )
 
+navbar = dbc.NavbarSimple(
+    [
+        dbc.NavItem(
+            dbc.NavLink(
+                "GitHub", href="https://github.com/eliasdabbas/dash-aggrid-scales"
+            ),
+        )
+    ],
+    brand="Dash AgGrid Scales",
+    color="primary",
+    fluid="lg",
+)
+
+nav = dbc.Nav(
+    [
+        html.Br(),
+        dbc.NavItem(html.H4("Tutorials")),
+        html.Ul([dbc.NavLink("Tutorial 1")]),
+        dbc.NavItem(html.H4("How-to Guides")),
+        dbc.NavItem(html.H4("Reference")),
+        dbc.NavItem(html.H4("Explanations")),
+    ],
+    vertical=True,
+)
 
 app.layout = dbc.Container(
     [
-        html.Br(),
-        html.Br(),
-        html.Div(
-            html.H1("Dash AgGrid Scales"),
-            style={"textAlign": "center", "color": primary},
-        ),
-        html.Br(),
-        html.Br(),
-        dbc.Tabs(
+        navbar,
+        dbc.Row(
             [
-                dbc.Tab(
+                # dbc.Col(nav, lg=2),
+                dbc.Col(lg=1),
+                dbc.Col(
                     [
-                        medals_grid,
                         html.Br(),
                         html.Br(),
-                        html.H2("Without scales:"),
-                        html.Br(),
-                        AgGrid(
-                            rowData=medals.to_dict("records"),
-                            style={"height": 450},
-                            columnDefs=[{"field": col} for col in medals],
-                            columnSize="sizeToFit",
-                        ),
-                    ],
-                    label="Medals grid",
-                    label_style={"color": primary, "fontWeight": "bold"},
-                ),
-                dbc.Tab(
-                    [
-                        iris_grid,
-                        html.Br(),
-                        html.Br(),
-                        html.H2("Without scales:"),
-                        html.Br(),
-                        AgGrid(
-                            rowData=iris.to_dict("records"),
-                            style={"height": 700},
-                            columnDefs=[{"field": col} for col in iris],
-                            columnSize="sizeToFit",
-                        ),
-                    ],
-                    label="Iris grid",
-                    label_style={"color": primary, "fontWeight": "bold"},
-                ),
-                dbc.Tab(
-                    [
-                        gapminder_grid,
-                        html.Br(),
-                        html.Br(),
-                        html.H2("Without scales:"),
-                        html.Br(),
-                        AgGrid(
-                            rowData=gapminder.to_dict("records"),
-                            style={"height": 700},
-                            columnDefs=[
-                                {"field": col} for col in gapminder.columns[:6]
+                        html.Div(
+                            [
+                                html.H1(
+                                    html.Code("Dash AgGrid Scales"),
+                                    style={"textAlign": "center", "color": primary},
+                                ),
+                                dcc.Markdown(
+                                    [
+                                        """
+
+A Python package that enables setting color styles for columns in a `dash-ag-grid` table.
+
+All Plotly color scales are provided and can be used as:
+
+- `sequential`: For providing a continuous color scales as a background gradient for cells in the desired column.
+- `qualitative`: For categorical color scales to distinguish between unique (repeated) values in a column.
+- `diverging`: Another variation of continuous color scales but used to show how much values diverge from a certain value. The `midpoint` value can be zero for example, to show positive/negative values, or could be an average or target value.
+- `bar`: Provides bars to make columns like bar charts.
+
+## Installation
+
+```bash
+pip install dash-aggrid-scales
+```
+
+
+## Examples
+
+"""
+                                    ]
+                                ),
                             ],
-                            columnSize="sizeToFit",
                         ),
+                        html.Br(),
+                        html.Br(),
+                        dbc.Tabs(
+                            [
+                                dbc.Tab(
+                                    [
+                                        medals_grid,
+                                        html.Br(),
+                                        html.Br(),
+                                        html.H2("Without scales:"),
+                                        html.Br(),
+                                        AgGrid(
+                                            rowData=medals.to_dict("records"),
+                                            style={"height": 450},
+                                            columnDefs=[
+                                                {"field": col} for col in medals
+                                            ],
+                                            columnSize="sizeToFit",
+                                        ),
+                                    ],
+                                    label="Medals grid",
+                                    label_style={
+                                        "color": primary,
+                                        "fontWeight": "bold",
+                                    },
+                                ),
+                                dbc.Tab(
+                                    [
+                                        iris_grid,
+                                        html.Br(),
+                                        html.Br(),
+                                        html.H2("Without scales:"),
+                                        html.Br(),
+                                        AgGrid(
+                                            rowData=iris.to_dict("records"),
+                                            style={"height": 700},
+                                            columnDefs=[{"field": col} for col in iris],
+                                            columnSize="sizeToFit",
+                                        ),
+                                    ],
+                                    label="Iris grid",
+                                    label_style={
+                                        "color": primary,
+                                        "fontWeight": "bold",
+                                    },
+                                ),
+                                dbc.Tab(
+                                    [
+                                        gapminder_grid,
+                                        html.Br(),
+                                        html.Br(),
+                                        html.H2("Without scales:"),
+                                        html.Br(),
+                                        AgGrid(
+                                            rowData=gapminder.to_dict("records"),
+                                            style={"height": 700},
+                                            columnDefs=[
+                                                {"field": col}
+                                                for col in gapminder.columns[:6]
+                                            ],
+                                            columnSize="sizeToFit",
+                                        ),
+                                    ],
+                                    label="Gapminder grid",
+                                    label_style={
+                                        "color": primary,
+                                        "fontWeight": "bold",
+                                    },
+                                ),
+                                dbc.Tab(
+                                    stocks_grid,
+                                    label="Stocks",
+                                    label_style={
+                                        "color": primary,
+                                        "fontWeight": "bold",
+                                    },
+                                ),
+                                # dbc.Tab([code_tab], label="Code"),
+                            ]
+                        ),
+                        html.Br(),
+                        html.Hr(),
+                        html.Br(),
+                        dcc.Markdown("""## Usage
+
+The `AgGrid` component accepts a `columnDefs` parameter to set specific definitions per column.
+
+```python
+from dash-ag-grid import AgGrid
+
+AgGrid(
+    rowData=df.to_dict("records"),
+    columnDefs=[
+        {
+            "field": "column name",
+            "cellStyle": {
+                "styleConditions": [
+                    {
+                        "condition": "params.value > 10 && params.value <= 20",
+                        "style": {"backgroundColor": "#00224e", "color": "white"},
+                    },
+                    {
+                        "condition": "params.value > 20 && params.value <= 30",
+                        "style": {"backgroundColor": "#123570", "color": "white"},
+                    },
+                    {
+                        "condition": "params.value > 30 && params.value <= 40",
+                        "style": {"backgroundColor": "#3b496c", "color": "white"},
+                    },
+                ]
+            },
+        },
+    ],
+)
+
+```
+
+The above code sets a bunch of style conditions. If a value falls between 10 and 20, give it this background color, and this font color, and so on for all mentioned intervals.
+
+This package automates this process so you don't have to create all those conditions manually and worry about the exact color selections.
+
+You simply provide the function corresponding to the scale type you want, and provide any of the optinal parameters like the scale name.
+
+```python
+import dash-aggrid-scales as das
+das.sequential(df["column_a"])
+```
+
+This will produce the required list of conditions that you can feed into the `AgGrid` definition.
+"""),
                     ],
-                    label="Gapminder grid",
-                    label_style={"color": primary, "fontWeight": "bold"},
+                    lg=10,
                 ),
-                dbc.Tab(
-                    stocks_grid,
-                    label="Stocks",
-                    label_style={"color": primary, "fontWeight": "bold"},
-                ),
-                # dbc.Tab([code_tab], label="Code"),
             ]
         ),
     ]
     + [html.Br() for i in range(10)],
     class_name="dbc dbc-ag-grid",
+    fluid=True,
+    style={"fontSize": "1.23rem"},
 )
 
 if __name__ == "__main__":
