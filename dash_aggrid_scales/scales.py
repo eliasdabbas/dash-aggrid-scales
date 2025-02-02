@@ -4,7 +4,7 @@ from itertools import pairwise
 import pandas as pd
 import plotly.express as px
 
-__all__ = ["sequential", "bar", "qualitative"]
+__all__ = ["sequential", "bar", "qualitative", "diverging"]
 
 
 def sequential(
@@ -62,17 +62,17 @@ def sequential(
     return styleConditions
 
 
-def edge_bins(num_bins):
+def _edge_bins(num_bins):
     d = {
         5: [0, 1, 3, 4],
         7: [0, 1, 5, 6],
         11: [0, 1, 2, 8, 9, 10],
-        12: [0, 1, 2, 9, 10, 11],
+        12: [0, 1, 2, 3, 8, 9, 10, 11],
     }
     return d.get(num_bins, [0, 1, num_bins - 1, num_bins - 2])
 
 
-def diverging(series: pd.Series, colorscale: str = "RdBu"):
+def diverging(series: pd.Series, colorscale: str = "RdBu", midpoint=None):
     """
     Generates style conditions using a diverging color scale based on the values in a Pandas Series.
 
@@ -97,24 +97,27 @@ def diverging(series: pd.Series, colorscale: str = "RdBu"):
         raise ValueError(f"Color scale '{colorscale}' is not recognized.")
 
     num_bins = len(scale)
-
+    mid_value = series.min() + ((series.max() - series.min()) / 2)
+    if midpoint is not None:
+        if midpoint <= mid_value:
+            newval = midpoint - (series.max() - midpoint)
+        else:
+            newval = midpoint + (midpoint - series.min())
+        series = pd.concat([series, pd.Series([newval])])
     categories = pd.cut(
         series, num_bins, include_lowest=True
     ).cat.categories.sort_values()
 
-    # midpoint = num_bins / 2.0
-
     styleConditions = []
     for i, cat in enumerate(categories):
         background_color = scale[i][1]
-        text_color = "white" if i in edge_bins(num_bins) else "inherit"
+        text_color = "white" if i in _edge_bins(num_bins) else "inherit"
         styleConditions.append(
             {
                 "condition": f"params.value > {cat.left} && params.value <= {cat.right}",
                 "style": {"backgroundColor": background_color, "color": text_color},
             }
         )
-
     return styleConditions
 
 
