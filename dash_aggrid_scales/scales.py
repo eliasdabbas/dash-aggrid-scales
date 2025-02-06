@@ -6,10 +6,47 @@ import plotly.express as px
 
 __all__ = ["sequential", "bar", "qualitative", "diverging"]
 
+_DARK_SART_SCALES = [
+    "plotly3",
+    "plotly3_r",
+    "viridis",
+    "viridis_r",
+    "cividis",
+    "cividis_r",
+    "inerno",
+    "inerno_r",
+    "magma",
+    "magma_r",
+    "plasma",
+    "plasma_r",
+    "turbo",
+    "turbo_r",
+    "blackbody",
+    "blackbody_r",
+    "electric",
+    "electric_r",
+    "hot",
+    "hot_r",
+    "jet",
+    "jet_r",
+    "thermal",
+    "thermal_r",
+    "haline",
+    "haline_r",
+    "solar",
+    "solar_r",
+    "ice",
+    "ice_r",
+    "gray",
+    "gray_r",
+    "aggrnyl",
+    "aggrnyl_r",
+    "agsunset",
+    "agsunset_r",
+]
 
-def sequential(
-    series: pd.Series, colorscale: str = "cividis", flip_textcolor: bool = False
-):
+
+def sequential(series: pd.Series, colorscale: str = "cividis"):
     """
     Generates style conditions for a heatmap-like styling based on the values in a Pandas Series.
 
@@ -20,8 +57,6 @@ def sequential(
     colorscale : str, default 'cividis'
         Name of a Plotly Express colorscale. If it ends with '_r',
         the scale will reverse the midpoint logic.
-    flip_textcolor : bool
-        Whether or not to start with a dark/light color for text (some scales start with light colors and white text would be unreadable)
 
     Returns
     -------
@@ -31,7 +66,7 @@ def sequential(
          - 'style': a dictionary with 'backgroundColor' and 'color'.
     """
 
-    if not flip_textcolor:
+    if colorscale.lower() in _DARK_SART_SCALES:
         comparator = operator.gt if colorscale.endswith("_r") else operator.lt
     else:
         comparator = operator.lt if colorscale.endswith("_r") else operator.gt
