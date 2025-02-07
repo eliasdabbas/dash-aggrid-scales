@@ -8,7 +8,19 @@ from dash_ag_grid import AgGrid
 
 import dash_aggrid_scales as das
 
-iris = px.data.iris()
+datasets = [
+    "carshare",
+    "election",
+    "experiment",
+    "gapminder",
+    "iris",
+    "medals_long",
+    "stocks",
+    "tips",
+    "wind",
+]
+
+
 register_page(__name__, path="/customize")
 
 dataTypeDefinitions = {
@@ -25,12 +37,27 @@ layout = dbc.Container(
     [
         html.Br(),
         html.H1("Customize your tables!"),
+        html.Br(),
         dbc.Row(
             [
-                dbc.Col([], lg=6, md=5, sm=12),
                 dbc.Col(
                     [
-                        dbc.Label("Table height:"),
+                        dbc.Label(html.B("Select dataset:")),
+                        dcc.Dropdown(
+                            id="dataset_dropdown",
+                            options=sorted(datasets),
+                            value="medals_long",
+                            clearable=False,
+                        ),
+                    ],
+                    lg=3,
+                    md=5,
+                    sm=12,
+                ),
+                dbc.Col([], lg=3, md=5, sm=12),
+                dbc.Col(
+                    [
+                        dbc.Label(html.B("Table height:")),
                         dcc.Slider(
                             id="table_height",
                             min=300,
@@ -48,7 +75,7 @@ layout = dbc.Container(
                 ),
                 dbc.Col(
                     [
-                        dbc.Label("Row heights:"),
+                        dbc.Label(html.B("Row heights:")),
                         dcc.Slider(
                             id="row_height",
                             min=17,
@@ -66,6 +93,7 @@ layout = dbc.Container(
                 ),
                 dbc.Col(
                     [
+                        html.Br(),
                         dbc.Button(
                             "Reset table",
                             id="reset_button",
@@ -79,18 +107,14 @@ layout = dbc.Container(
                 ),
             ],
         ),
+        html.Br(),
         AgGrid(
-            id="iris_grid",
+            id="main_grid",
             dashGridOptions={
                 "dataTypeDefinitions": dataTypeDefinitions,
                 "suppressMenuHide": True,
             },
-            rowData=iris.to_dict("records"),
             rowStyle={"fontFamily": "Menlo", "backgroundColor": "white"},
-            columnDefs=[
-                {"field": col, "filter": True, "headerName": col.lower()}
-                for col in iris
-            ],
         ),
         html.Br(),
         dbc.Row(
@@ -98,7 +122,7 @@ layout = dbc.Container(
                 dbc.Col(
                     [
                         dbc.Label(html.B(("Column:"))),
-                        dcc.Dropdown(id="col_dropdown", options=iris.columns),
+                        dcc.Dropdown(id="col_dropdown"),
                     ],
                     lg=2,
                     md=6,
@@ -158,8 +182,23 @@ layout = dbc.Container(
 
 
 @callback(
-    Output("iris_grid", "style"),
-    Output("iris_grid", "dashGridOptions"),
+    Output("main_grid", "rowData"),
+    Output("col_dropdown", "options"),
+    Output("main_grid", "columnDefs"),
+    Input("dataset_dropdown", "value"),
+)
+def set_main_grid_rowdata(dataset):
+    df = getattr(px.data, dataset)()
+    columnDefs = [
+        {"field": col, "filter": True, "headerName": col.lower()} for col in df
+    ]
+
+    return df.to_dict("records"), df.columns, columnDefs
+
+
+@callback(
+    Output("main_grid", "style"),
+    Output("main_grid", "dashGridOptions"),
     Input("table_height", "value"),
     Input("row_height", "value"),
 )
@@ -206,16 +245,18 @@ def set_colorscale_options(colorscale_type):
 
 
 @callback(
-    Output("iris_grid", "columnDefs", allow_duplicate=True),
+    Output("main_grid", "columnDefs", allow_duplicate=True),
+    Input("dataset_dropdown", "value"),
     Input("col_dropdown", "value"),
     Input("colorscale_type", "value"),
     Input("colorscale_name", "value"),
     Input("colorpicker_bg", "value"),
     Input("colorpicker_text", "value"),
-    Input("iris_grid", "columnDefs"),
+    Input("main_grid", "columnDefs"),
     prevent_initial_call=True,
 )
 def make_styles(
+    dataset,
     column,
     colorscale_type,
     colorscale_name,
@@ -223,12 +264,13 @@ def make_styles(
     colorpicker_text,
     columnDefs,
 ):
+    df = getattr(px.data, dataset)()
     if colorscale_type not in ["bar"] and colorscale_name:
         for columnDef in columnDefs:
             if columnDef["field"] == column:
                 columnDef["cellStyle"] = {
                     "styleConditions": getattr(das, colorscale_type)(
-                        iris[column], colorscale_name
+                        df[column], colorscale_name
                     )
                 }
         return columnDefs
@@ -237,7 +279,7 @@ def make_styles(
             if columnDef["field"] == column:
                 columnDef["cellStyle"] = {
                     "styleConditions": das.bar(
-                        iris[column], colorpicker_bg["hex"], colorpicker_text["hex"]
+                        df[column], colorpicker_bg["hex"], colorpicker_text["hex"]
                     )
                 }
         return columnDefs
@@ -246,14 +288,14 @@ def make_styles(
 
 
 @callback(
-    Output("iris_grid", "columnDefs", allow_duplicate=True),
+    Output("main_grid", "columnDefs", allow_duplicate=True),
     Output("colorscale_type", "value"),
-    Output("iris_grid", "style", allow_duplicate=True),
-    Output("iris_grid", "dashGridOptions", allow_duplicate=True),
+    Output("main_grid", "style", allow_duplicate=True),
+    Output("main_grid", "dashGridOptions", allow_duplicate=True),
     Output("table_height", "value"),
     Output("row_height", "value"),
     Input("reset_button", "n_clicks"),
-    State("iris_grid", "columnDefs"),
+    State("main_grid", "columnDefs"),
     prevent_initial_call=True,
 )
 def reset_scales(n_clicks, columnDefs):
