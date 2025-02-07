@@ -39,7 +39,7 @@ dataTypeDefinitions = {
 medals_grid = AgGrid(
     rowData=medals.to_dict("records"),
     defaultColDef=defaultColDef,
-    columnSize="sizeToFit",
+    columnSize="responsiveSizeToFit",
     style={"height": 450},
     columnDefs=[
         {
