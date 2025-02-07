@@ -16,24 +16,37 @@ from dash import Dash, html, page_container
 
 dbc_css = "https://cdn.jsdelivr.net/gh/AnnMarieW/dash-bootstrap-templates/dbc.min.css"
 app = Dash(
-    external_stylesheets=[dbc.themes.COSMO, dbc_css],
+    external_stylesheets=[dbc.themes.COSMO, dbc_css, dbc.icons.BOOTSTRAP],
     use_pages=True,
 )
 server = app.server
 navbar = dbc.NavbarSimple(
     [
         dbc.NavItem(
-            dbc.NavLink(html.B("Customize"), href="/customize"),
+            dbc.NavLink(dbc.Button("Customize", color="warning"), href="/customize"),
         ),
         dbc.NavItem(
             dbc.NavLink(
-                "GitHub", href="https://github.com/eliasdabbas/dash-aggrid-scales"
-            ),
+                html.I(className="bi bi-github", style={"fontSize": "23pt"}),
+                href="https://github.com/eliasdabbas/dash-aggrid-scales",
+            )
+        ),
+        dbc.NavItem(
+            dbc.NavLink(
+                html.I(className="bi bi-linkedin", style={"fontSize": "23pt"}),
+                href="https://www.linkedin.com/in/eliasdabbas/",
+            )
+        ),
+        dbc.NavItem(
+            dbc.NavLink(
+                html.I(className="bi bi-twitter", style={"fontSize": "23pt"}),
+                href="https://x.com/eliasdabbas",
+            )
         ),
     ],
     brand=html.B("Dash AgGrid Scales"),
     brand_href="/",
-    color="primary",
+    color="light",
     fluid="lg",
 )
 
