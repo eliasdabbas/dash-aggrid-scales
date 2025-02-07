@@ -33,6 +33,12 @@ navbar = dbc.NavbarSimple(
         ),
         dbc.NavItem(
             dbc.NavLink(
+                html.Img(src="assets/plotly_community_logo.png", width=39),
+                href="https://community.plotly.com/u/eliasdabbas/summary",
+            )
+        ),
+        dbc.NavItem(
+            dbc.NavLink(
                 html.I(className="bi bi-linkedin", style={"fontSize": "23pt"}),
                 href="https://www.linkedin.com/in/eliasdabbas/",
             )
