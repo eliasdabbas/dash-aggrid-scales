@@ -3,7 +3,7 @@
 # dependencies = [
 #     "dash",
 #     "dash-ag-grid",
-#     "dash-aggrid-scales",
+#     "dash-aggrid-scales>=0.2.1",
 #     "dash-bootstrap-components",
 #     "dash-bootstrap-templates",
 #     "dash-daq",
@@ -23,6 +23,13 @@ server = app.server
 navbar = dbc.NavbarSimple(
     [
         dbc.NavItem(
+            dbc.NavLink(
+                "Tutorial",
+                style={"fontSize": "19pt"},
+                href="/tutorial",
+            )
+        ),
+        dbc.NavItem(
             dbc.NavLink(dbc.Button("Customize", color="warning"), href="/customize"),
         ),
         dbc.NavItem(
@@ -33,7 +40,7 @@ navbar = dbc.NavbarSimple(
         ),
         dbc.NavItem(
             dbc.NavLink(
-                html.Img(src="assets/plotly_community_logo.png", width=39),
+                html.Img(src="assets/plotly_community_logo.png", width=43),
                 href="https://community.plotly.com/u/eliasdabbas/summary",
             )
         ),
@@ -61,6 +68,7 @@ app.layout = dbc.Container(
     [navbar, page_container] + [html.Br() for i in range(20)],
     class_name="dbc dbc-ag-grid",
     fluid=True,
+    style={"fontSize": "1.23rem"},
 )
 
 if __name__ == "__main__":
