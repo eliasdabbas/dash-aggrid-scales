@@ -266,7 +266,7 @@ layout = dbc.Container(
                                     [
                                         """
 
-A Python package that enables setting color styles for columns in a `dash-ag-grid` table.
+A Python package that enables setting color scales for columns in a `dash-ag-grid` table.
 
 All Plotly color scales are provided and can be used as:
 
@@ -427,5 +427,5 @@ This will produce the required list of conditions that you can feed into the `Ag
     ],
     class_name="dbc dbc-ag-grid",
     fluid=True,
-    style={"fontSize": "1.23rem"},
+
 )
