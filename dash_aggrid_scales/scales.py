@@ -192,6 +192,36 @@ def _normalize_color(color: str) -> str:
     )
 
 
+def _make_custom_scale(colors: list, num_colors: int = 10) -> list:
+    """
+    Generate a list of interpolated colors from a list of color stops.
+
+    Parameters
+    ----------
+    colors : list
+        List of colors (CSS names, hex, or rgb format). Must contain at least 2 colors.
+    num_colors : int, default 10
+        Number of evenly-spaced colors to generate.
+
+    Returns
+    -------
+    list of str
+        List of rgb color strings, e.g., ['rgb(255,255,255)', 'rgb(0,0,255)', ...]
+
+    Raises
+    ------
+    ValueError
+        If fewer than 2 colors are provided or if any color is invalid.
+    """
+    if len(colors) < 2:
+        raise ValueError("Must provide at least 2 colors for interpolation.")
+
+    normalized = [_normalize_color(c) for c in colors]
+    base_scale = [[i / (len(normalized) - 1), c] for i, c in enumerate(normalized)]
+
+    return px.colors.sample_colorscale(base_scale, num_colors, colortype="rgb")
+
+
 _DARK_SART_SCALES = [
     "plotly3",
     "plotly3_r",
