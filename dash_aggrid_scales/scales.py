@@ -1,10 +1,15 @@
 import operator
+from collections.abc import Sequence
 from itertools import pairwise
+from typing import Union
 
 import pandas as pd
 import plotly.express as px
 
 __all__ = ["sequential", "bar", "qualitative", "diverging"]
+
+
+ArrayLike = Union[pd.Series, Sequence]
 
 
 _CSS_COLORS = {
@@ -293,17 +298,26 @@ _DARK_SART_SCALES = [
 ]
 
 
-def sequential(series: pd.Series, colorscale: str = "cividis"):
+def sequential(
+    data: ArrayLike,
+    colorscale: str | list[str] | tuple[str, ...] = "cividis",
+    nbins: int = 10,
+):
     """
-    Generates style conditions for a heatmap-like styling based on the values in a Pandas Series.
+    Generates style conditions for a heatmap-like styling based on numeric data.
 
     Parameters
     ----------
-    series : pd.Series
-        Input data for generating color bins.
-    colorscale : str, default 'cividis'
-        Name of a Plotly Express colorscale. If it ends with '_r',
-        the scale will reverse the midpoint logic.
+    data : array-like
+        Input data for generating color bins. Can be a list, tuple,
+        numpy array, or pandas Series.
+    colorscale : str, list of str, or tuple of str, default 'cividis'
+        Either a Plotly Express colorscale name (e.g., 'viridis', 'magma'),
+        or a list/tuple of colors to interpolate (e.g., ['white', 'blue']).
+        Colors can be CSS color names, hex codes, or 'rgb(r,g,b)' strings.
+        If it ends with '_r', the scale will be reversed.
+    nbins : int, default 10
+        Number of bins to divide the data into.
 
     Returns
     -------
@@ -312,28 +326,22 @@ def sequential(series: pd.Series, colorscale: str = "cividis"):
          - 'condition': the JS condition to compare cell values.
          - 'style': a dictionary with 'backgroundColor' and 'color'.
     """
-
-    if colorscale.lower() in _DARK_SART_SCALES:
-        comparator = operator.gt if colorscale.endswith("_r") else operator.lt
+    if isinstance(colorscale, (list, tuple)):
+        colors = _make_custom_scale(colorscale, nbins)
     else:
-        comparator = operator.lt if colorscale.endswith("_r") else operator.gt
+        try:
+            base_scale = px.colors.get_colorscale(colorscale)
+        except ValueError:
+            raise ValueError(f"Color scale '{colorscale}' is not recognized.")
+        colors = px.colors.sample_colorscale(base_scale, nbins, colortype="rgb")
 
-    try:
-        scale = px.colors.get_colorscale(colorscale)
-    except ValueError:
-        raise ValueError(f"Color scale '{colorscale}' is not recognized.")
-
-    num_bins = len(scale)
-    categories = pd.cut(
-        series, num_bins, include_lowest=True
-    ).cat.categories.sort_values()
-
-    midpoint = num_bins / 2.0
+    series = pd.Series(data)
+    categories = pd.cut(series, nbins, include_lowest=True).cat.categories.sort_values()
 
     styleConditions = []
     for i, cat in enumerate(categories):
-        background_color = scale[i][1]
-        text_color = "white" if comparator(i, midpoint) else "inherit"
+        background_color = colors[i]
+        text_color = _get_text_color(background_color)
         styleConditions.append(
             {
                 "condition": f"params.value > {cat.left} && params.value <= {cat.right}",
@@ -354,17 +362,30 @@ def _edge_bins(num_bins):
     return d.get(num_bins, [0, 1, num_bins - 1, num_bins - 2])
 
 
-def diverging(series: pd.Series, colorscale: str = "RdBu", midpoint=None):
+def diverging(
+    data: ArrayLike,
+    colorscale: str | list[str] | tuple[str, ...] = "RdBu",
+    nbins: int = 11,
+    midpoint=None,
+):
     """
-    Generates style conditions using a diverging color scale based on the values in a Pandas Series.
+    Generates style conditions using a diverging color scale based on numeric data.
 
     Parameters
     ----------
-    series : pd.Series
-        Input data for generating color bins.
-    colorscale : str, default 'RdBu'
-        Name of a Plotly Express colorscale. If it ends with '_r',
-        the scale will be reversed.
+    data : array-like
+        Input data for generating color bins. Can be a list, tuple,
+        numpy array, or pandas Series.
+    colorscale : str, list of str, or tuple of str, default 'RdBu'
+        Either a Plotly Express colorscale name (e.g., 'RdBu', 'PiYG'),
+        or a list/tuple of colors to interpolate (e.g., ['red', 'white', 'blue']).
+        Colors can be CSS color names, hex codes, or 'rgb(r,g,b)' strings.
+        If it ends with '_r', the scale will be reversed.
+    nbins : int, default 11
+        Number of bins to divide the data into. Odd numbers work best
+        for diverging scales to have a clear midpoint.
+    midpoint : float, optional
+        Value to center the colorscale on. If None, uses the data midpoint.
 
     Returns
     -------
@@ -373,12 +394,16 @@ def diverging(series: pd.Series, colorscale: str = "RdBu", midpoint=None):
          - 'condition': the JS condition to compare cell values.
          - 'style': a dictionary with 'backgroundColor' and 'color'.
     """
-    try:
-        scale = px.colors.get_colorscale(colorscale)
-    except ValueError:
-        raise ValueError(f"Color scale '{colorscale}' is not recognized.")
+    if isinstance(colorscale, (list, tuple)):
+        colors = _make_custom_scale(colorscale, nbins)
+    else:
+        try:
+            base_scale = px.colors.get_colorscale(colorscale)
+        except ValueError:
+            raise ValueError(f"Color scale '{colorscale}' is not recognized.")
+        colors = px.colors.sample_colorscale(base_scale, nbins, colortype="rgb")
 
-    num_bins = len(scale)
+    series = pd.Series(data)
     mid_value = series.min() + ((series.max() - series.min()) / 2)
     if midpoint is not None:
         if midpoint <= mid_value:
@@ -386,14 +411,12 @@ def diverging(series: pd.Series, colorscale: str = "RdBu", midpoint=None):
         else:
             newval = midpoint + (midpoint - series.min())
         series = pd.concat([series, pd.Series([newval])])
-    categories = pd.cut(
-        series, num_bins, include_lowest=True
-    ).cat.categories.sort_values()
+    categories = pd.cut(series, nbins, include_lowest=True).cat.categories.sort_values()
 
     styleConditions = []
     for i, cat in enumerate(categories):
-        background_color = scale[i][1]
-        text_color = "white" if i in _edge_bins(num_bins) else "inherit"
+        background_color = colors[i]
+        text_color = _get_text_color(background_color)
         styleConditions.append(
             {
                 "condition": f"params.value > {cat.left} && params.value <= {cat.right}",
