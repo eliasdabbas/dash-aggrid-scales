@@ -222,6 +222,37 @@ def _make_custom_scale(colors: list, num_colors: int = 10) -> list:
     return px.colors.sample_colorscale(base_scale, num_colors, colortype="rgb")
 
 
+def _get_text_color(rgb_color: str) -> str:
+    """
+    Determine appropriate text color (white or inherit) based on background luminance.
+
+    Uses WCAG relative luminance formula to ensure readable contrast.
+    Returns 'white' for dark backgrounds (luminance < 0.179) and 'inherit' for light.
+
+    Parameters
+    ----------
+    rgb_color : str
+        Background color in 'rgb(r, g, b)' format.
+
+    Returns
+    -------
+    str
+        'white' for dark backgrounds, 'inherit' for light backgrounds.
+    """
+    rgb_tuple = px.colors.unlabel_rgb(rgb_color)
+    r, g, b = rgb_tuple[0] / 255, rgb_tuple[1] / 255, rgb_tuple[2] / 255
+
+    r = r / 12.92 if r <= 0.03928 else ((r + 0.055) / 1.055) ** 2.4
+    g = g / 12.92 if g <= 0.03928 else ((g + 0.055) / 1.055) ** 2.4
+    b = b / 12.92 if b <= 0.03928 else ((b + 0.055) / 1.055) ** 2.4
+
+    # Calculate relative luminance (human eye is most sensitive to green)
+    luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b
+
+    # WCAG threshold: dark backgrounds need white text
+    return "white" if luminance < 0.179 else "inherit"
+
+
 _DARK_SART_SCALES = [
     "plotly3",
     "plotly3_r",
