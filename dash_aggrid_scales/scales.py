@@ -158,6 +158,40 @@ _CSS_COLORS = {
     "yellowgreen": "#9acd32",
 }
 
+
+def _normalize_color(color: str) -> str:
+    """
+    Convert a color string to a format suitable for Plotly interpolation.
+
+    Named CSS colors are converted to hex. Hex and rgb formats pass through.
+    Raises ValueError for unrecognized color formats.
+
+    Parameters
+    ----------
+    color : str
+        A color string (CSS name, hex, or rgb format).
+
+    Returns
+    -------
+    str
+        The color in hex or rgb format.
+
+    Raises
+    ------
+    ValueError
+        If the color is not a recognized CSS name or valid hex/rgb format.
+    """
+    c = color.lower().strip()
+    if c in _CSS_COLORS:
+        return _CSS_COLORS[c]
+    if c.startswith("#") or c.startswith("rgb"):
+        return color
+    raise ValueError(
+        f"Color '{color}' is not recognized. "
+        "Use a valid CSS color name, hex (e.g., '#ff0000'), or rgb (e.g., 'rgb(255,0,0)') format."
+    )
+
+
 _DARK_SART_SCALES = [
     "plotly3",
     "plotly3_r",
