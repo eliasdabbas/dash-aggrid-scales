@@ -66,3 +66,7 @@ if __name__ == "__main__":
     app.run(debug=True)
 
 ```
+
+The resulting app will display an `AgGrid` as follows:
+
+![](dash-aggrid-scales-sample-app.png)
