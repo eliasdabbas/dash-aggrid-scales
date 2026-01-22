@@ -427,5 +427,4 @@ This will produce the required list of conditions that you can feed into the `Ag
     ],
     class_name="dbc dbc-ag-grid",
     fluid=True,
-
 )

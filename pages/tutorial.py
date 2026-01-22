@@ -11,7 +11,9 @@ import dash_aggrid_scales as das
 medals = px.data.medals_long()
 
 df = pd.DataFrame({"num": list(range(1, 12))})
-register_page(__name__)
+register_page(
+    __name__, title="Python tutorial for creating color scales in data tables"
+)
 
 layout = dbc.Container(
     [

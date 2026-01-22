@@ -17,6 +17,7 @@ from dash import Dash, html, page_container
 dbc_css = "https://cdn.jsdelivr.net/gh/AnnMarieW/dash-bootstrap-templates/dbc.min.css"
 app = Dash(
     external_stylesheets=[dbc.themes.COSMO, dbc_css, dbc.icons.BOOTSTRAP],
+    title="Python package for colors scales in data tables - Dash AgGrid Scales",
     use_pages=True,
 )
 server = app.server
@@ -60,6 +61,7 @@ navbar = dbc.NavbarSimple(
     brand=html.B("Dash AgGrid Scales"),
     brand_href="/",
     color="light",
+    dark=False,
     fluid="lg",
 )
 
