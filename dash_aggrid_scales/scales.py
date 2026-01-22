@@ -1,4 +1,3 @@
-import operator
 from collections.abc import Sequence
 from itertools import pairwise
 from typing import Union
@@ -258,46 +257,6 @@ def _get_text_color(rgb_color: str) -> str:
     return "white" if luminance < 0.179 else "inherit"
 
 
-_DARK_SART_SCALES = [
-    "plotly3",
-    "plotly3_r",
-    "viridis",
-    "viridis_r",
-    "cividis",
-    "cividis_r",
-    "inferno",
-    "inferno_r",
-    "magma",
-    "magma_r",
-    "plasma",
-    "plasma_r",
-    "turbo",
-    "turbo_r",
-    "blackbody",
-    "blackbody_r",
-    "electric",
-    "electric_r",
-    "hot",
-    "hot_r",
-    "jet",
-    "jet_r",
-    "thermal",
-    "thermal_r",
-    "haline",
-    "haline_r",
-    "solar",
-    "solar_r",
-    "ice",
-    "ice_r",
-    "gray",
-    "gray_r",
-    "aggrnyl",
-    "aggrnyl_r",
-    "agsunset",
-    "agsunset_r",
-]
-
-
 def sequential(
     data: ArrayLike,
     colorscale: str | list[str] | tuple[str, ...] = "cividis",
@@ -350,16 +309,6 @@ def sequential(
         )
 
     return styleConditions
-
-
-def _edge_bins(num_bins):
-    d = {
-        5: [0, 1, 3, 4],
-        7: [0, 1, 5, 6],
-        11: [0, 1, 2, 8, 9, 10],
-        12: [0, 1, 2, 3, 8, 9, 10, 11],
-    }
-    return d.get(num_bins, [0, 1, num_bins - 1, num_bins - 2])
 
 
 def diverging(
@@ -426,39 +375,73 @@ def diverging(
     return styleConditions
 
 
-def qualitative(series: pd.Series, colorscale: str = "Vivid"):
+def qualitative(
+    data: ArrayLike,
+    colorscale: str | list[str] | tuple[str, ...] = "Vivid",
+):
     """
-    Generates style conditions for categorical data in a Pandas Series.
+    Generates style conditions for categorical data.
 
     Parameters
     ----------
-    series : pd.Series
-        The categorical data.
-    colorscale : str, default "Vivid"
-        A key referencing a known qualitative color scale in Plotly.
+    data : array-like
+        The categorical data. Can be a list, tuple, numpy array, or pandas Series.
+    colorscale : str, list of str, or tuple of str, default 'Vivid'
+        Either a Plotly Express qualitative colorscale name (e.g., 'Vivid', 'Pastel'),
+        or a list/tuple of colors (e.g., ['red', 'green', 'blue']).
+        Colors can be CSS color names, hex codes, or 'rgb(r,g,b)' strings.
 
     Returns
     -------
-    List[Dict[str, Any]]
+    list of dict
         A list of dictionaries, each with:
          - 'condition': the JS expression for matching a cell's value
-         - 'style': a dictionary specifying 'backgroundColor'
+         - 'style': a dictionary specifying 'backgroundColor' and 'color'
     """
-    scale = getattr(px.colors.qualitative, colorscale)
+    if isinstance(colorscale, (list, tuple)):
+        colors = [_normalize_color(c) for c in colorscale]
+    else:
+        colors = getattr(px.colors.qualitative, colorscale, None)
+        if colors is None:
+            raise ValueError(
+                f"Qualitative color scale '{colorscale}' is not recognized."
+            )
+
+    series = pd.Series(data)
     categories = series.astype("category").cat.categories
     styleConditions = []
 
-    if len(categories) > len(scale):
+    if isinstance(colorscale, (list, tuple)):
+        if len(categories) != len(colors):
+            raise ValueError(
+                f"You have {len(categories)} categories but provided {len(colors)} colors. "
+                "When using a custom color list, the number of colors must match the number of categories."
+            )
+    elif len(categories) > len(colors):
         raise ValueError(
-            f"You have more categories than the colors in {colorscale}, please choose a different color scale."
+            f"You have {len(categories)} categories but '{colorscale}' only has {len(colors)} colors. "
+            "Please provide more colors or choose a different color scale."
         )
+
     for i, cat in enumerate(categories):
+        color = colors[i]
+        if color.startswith("#"):
+            rgb_tuple = px.colors.hex_to_rgb(color)
+            rgb_color = f"rgb({rgb_tuple[0]}, {rgb_tuple[1]}, {rgb_tuple[2]})"
+        elif color.startswith("rgb"):
+            rgb_color = color
+        else:
+            rgb_color = color
+
+        text_color = (
+            _get_text_color(rgb_color) if color.startswith(("#", "rgb")) else "inherit"
+        )
         styleConditions.append(
             {
                 "condition": f"params.value === '{cat}'"
                 if isinstance(cat, str)
                 else f"params.value === {cat}",
-                "style": {"backgroundColor": scale[i]},
+                "style": {"backgroundColor": color, "color": text_color},
             }
         )
     return styleConditions
