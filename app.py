@@ -3,7 +3,7 @@
 # dependencies = [
 #     "dash",
 #     "dash-ag-grid",
-#     "dash-aggrid-scales>=0.2.1",
+#     "dash-aggrid-scales>=0.3.0",
 #     "dash-bootstrap-components",
 #     "dash-bootstrap-templates",
 #     "dash-daq",
