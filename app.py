@@ -31,6 +31,13 @@ navbar = dbc.NavbarSimple(
             )
         ),
         dbc.NavItem(
+            dbc.NavLink(
+                "Reference",
+                style={"fontSize": "19pt"},
+                href="/reference",
+            )
+        ),
+        dbc.NavItem(
             dbc.NavLink(dbc.Button("Customize", color="warning"), href="/customize"),
         ),
         dbc.NavItem(
