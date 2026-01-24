@@ -412,10 +412,10 @@ def qualitative(
     styleConditions = []
 
     if isinstance(colorscale, (list, tuple)):
-        if len(categories) != len(colors):
+        if len(categories) > len(colors):
             raise ValueError(
-                f"You have {len(categories)} categories but provided {len(colors)} colors. "
-                "When using a custom color list, the number of colors must match the number of categories."
+                f"You have {len(categories)} categories but provided only {len(colors)} colors. "
+                "When using a custom color list, you must provide at least as many colors as categories."
             )
     elif len(categories) > len(colors):
         raise ValueError(
