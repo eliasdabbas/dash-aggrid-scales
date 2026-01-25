@@ -290,7 +290,7 @@ def sequential(
     else:
         try:
             base_scale = px.colors.get_colorscale(colorscale)
-        except ValueError:
+        except Exception:
             raise ValueError(f"Color scale '{colorscale}' is not recognized.")
         colors = px.colors.sample_colorscale(base_scale, nbins, colortype="rgb")
 
@@ -348,7 +348,7 @@ def diverging(
     else:
         try:
             base_scale = px.colors.get_colorscale(colorscale)
-        except ValueError:
+        except Exception:
             raise ValueError(f"Color scale '{colorscale}' is not recognized.")
         colors = px.colors.sample_colorscale(base_scale, nbins, colortype="rgb")
 
@@ -377,7 +377,7 @@ def diverging(
 
 def qualitative(
     data: ArrayLike,
-    colorscale: str | list[str] | tuple[str, ...] = "Vivid",
+    colorscale: str | list[str] | tuple[str, ...] | dict = "Vivid",
 ):
     """
     Generates style conditions for categorical data.
@@ -386,9 +386,10 @@ def qualitative(
     ----------
     data : array-like
         The categorical data. Can be a list, tuple, numpy array, or pandas Series.
-    colorscale : str, list of str, or tuple of str, default 'Vivid'
+    colorscale : str, list of str, tuple of str, or dict, default 'Vivid'
         Either a Plotly Express qualitative colorscale name (e.g., 'Vivid', 'Pastel'),
-        or a list/tuple of colors (e.g., ['red', 'green', 'blue']).
+        a list/tuple of colors (e.g., ['red', 'green', 'blue']),
+        or a dict mapping category values to colors (e.g., {'usa': 'green', 'canada': 'blue'}).
         Colors can be CSS color names, hex codes, or 'rgb(r,g,b)' strings.
 
     Returns
@@ -398,33 +399,41 @@ def qualitative(
          - 'condition': the JS expression for matching a cell's value
          - 'style': a dictionary specifying 'backgroundColor' and 'color'
     """
-    if isinstance(colorscale, (list, tuple)):
+    series = pd.Series(data)
+    categories = series.astype("category").cat.categories
+    styleConditions = []
+
+    if isinstance(colorscale, dict):
+        missing_categories = [cat for cat in categories if cat not in colorscale]
+        if missing_categories:
+            raise ValueError(
+                f"The following categories are missing from the color mapping: {missing_categories}. "
+                "Please provide colors for all categories in the data."
+            )
+        color_map = {cat: _normalize_color(colorscale[cat]) for cat in categories}
+    elif isinstance(colorscale, (list, tuple)):
         colors = [_normalize_color(c) for c in colorscale]
+        if len(categories) > len(colors):
+            raise ValueError(
+                f"You have {len(categories)} categories but provided only {len(colors)} colors. "
+                "When using a custom color list, you must provide at least as many colors as categories."
+            )
+        color_map = None
     else:
         colors = getattr(px.colors.qualitative, colorscale, None)
         if colors is None:
             raise ValueError(
                 f"Qualitative color scale '{colorscale}' is not recognized."
             )
-
-    series = pd.Series(data)
-    categories = series.astype("category").cat.categories
-    styleConditions = []
-
-    if isinstance(colorscale, (list, tuple)):
         if len(categories) > len(colors):
             raise ValueError(
-                f"You have {len(categories)} categories but provided only {len(colors)} colors. "
-                "When using a custom color list, you must provide at least as many colors as categories."
+                f"You have {len(categories)} categories but '{colorscale}' only has {len(colors)} colors. "
+                "Please provide more colors or choose a different color scale."
             )
-    elif len(categories) > len(colors):
-        raise ValueError(
-            f"You have {len(categories)} categories but '{colorscale}' only has {len(colors)} colors. "
-            "Please provide more colors or choose a different color scale."
-        )
+        color_map = None
 
     for i, cat in enumerate(categories):
-        color = colors[i]
+        color = color_map[cat] if color_map else colors[i]
         if color.startswith("#"):
             rgb_tuple = px.colors.hex_to_rgb(color)
             rgb_color = f"rgb({rgb_tuple[0]}, {rgb_tuple[1]}, {rgb_tuple[2]})"

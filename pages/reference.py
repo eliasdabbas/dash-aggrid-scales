@@ -109,8 +109,8 @@ Generates style conditions for categorical data.
 **data** : array-like
 >The categorical data. Can be a list, tuple, numpy array, or pandas Series.
 
-**colorscale** : str, list, or tuple, default `"Vivid"`
->Either a Plotly Express qualitative colorscale name (e.g., `"Vivid"`, `"Pastel"`), or a list/tuple of colors (e.g., `["red", "green", "blue"]`). Colors can be CSS color names, hex codes, or `"rgb(r,g,b)"` strings. You must provide at least as many colors as there are unique categories.
+**colorscale** : str, list, tuple, or dict, default `"Vivid"`
+>Either a Plotly Express qualitative colorscale name (e.g., `"Vivid"`, `"Pastel"`), a list/tuple of colors (e.g., `["red", "green", "blue"]`), or a dict mapping category values to colors (e.g., `{"usa": "green", "canada": "blue"}`). Colors can be CSS color names, hex codes, or `"rgb(r,g,b)"` strings. For lists/tuples, you must provide at least as many colors as categories. For dicts, all categories in the data must have a color mapping (extra keys are allowed for future categories).
 
 **Returns**
 

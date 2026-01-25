@@ -27,6 +27,7 @@ dev = [
     "dash-bootstrap-components>=1.7.1",
     "dash-bootstrap-templates>=2.0.0",
     "dash-daq>=0.5.0",
+    "pytest>=8.0.0",
 ]
 
 [tool.ruff.lint.extend-per-file-ignores]

@@ -489,6 +489,12 @@ das.qualitative(
     medals["nation"],
     colorscale=["#ff6b6b", "#4ecdc4", "#45b7d1"],
 )
+
+# Explicit color mapping using a dict
+das.qualitative(
+    medals["medal"],
+    colorscale={"gold": "gold", "silver": "silver", "bronze": "#cd7f32"},
+)
 ```
 
 """),
