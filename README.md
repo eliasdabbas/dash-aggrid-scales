@@ -40,8 +40,11 @@ app.layout = html.Div([
             },
             {
                 "field": "medal",
-                "headerName": "medal (qualitative)",
-                "cellStyle": {"styleConditions": das.qualitative(medals["medal"], "Safe")},
+                "headerName": "medal (qualitative with dict)",
+                "cellStyle": {"styleConditions": das.qualitative(
+                    medals["medal"], 
+                    {"gold": "gold", "silver": "silver", "bronze": "#cd7f32"}
+                )},
             },
             {
                 "field": "count",
