@@ -460,10 +460,15 @@ as many colors as there are unique categories — extra colors will be ignored.
             columnDefs=[
                 {
                     "field": "medal",
-                    "headerName": "Custom colors",
+                    "headerName": "Custom colors (dict mapping)",
                     "cellStyle": {
                         "styleConditions": das.qualitative(
-                            medals["medal"], colorscale=["gold", "silver", "#cd7f32"]
+                            medals["medal"],
+                            colorscale={
+                                "gold": "gold",
+                                "silver": "silver",
+                                "bronze": "#cd7f32",
+                            },
                         )
                     },
                 },
@@ -481,19 +486,19 @@ as many colors as there are unique categories — extra colors will be ignored.
         ),
         dcc.Markdown("""
 ```python
-# 3 colors for 3 medal types (Gold, Silver, Bronze)
+# Explicit color mapping using a dict - ensures correct medal colors
+das.qualitative(
+    medals["medal"],
+    colorscale={"gold": "gold", "silver": "silver", "bronze": "#cd7f32"},
+)
+
+# Or use a list (colors assigned by category order)
 das.qualitative(medals["medal"], colorscale=["gold", "silver", "#cd7f32"])
 
 # 3 colors for 3 nations
 das.qualitative(
     medals["nation"],
     colorscale=["#ff6b6b", "#4ecdc4", "#45b7d1"],
-)
-
-# Explicit color mapping using a dict
-das.qualitative(
-    medals["medal"],
-    colorscale={"gold": "gold", "silver": "silver", "bronze": "#cd7f32"},
 )
 ```
 
