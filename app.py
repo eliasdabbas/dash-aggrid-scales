@@ -3,7 +3,7 @@
 # dependencies = [
 #     "dash",
 #     "dash-ag-grid",
-#     "dash-aggrid-scales>=0.3.0",
+#     "dash-aggrid-scales>=0.4.0",
 #     "dash-bootstrap-components",
 #     "dash-bootstrap-templates",
 #     "dash-daq",
@@ -35,6 +35,13 @@ navbar = dbc.NavbarSimple(
                 "Reference",
                 style={"fontSize": "19pt"},
                 href="/reference",
+            )
+        ),
+        dbc.NavItem(
+            dbc.NavLink(
+                "Explanation",
+                style={"fontSize": "19pt"},
+                href="/explanation",
             )
         ),
         dbc.NavItem(
